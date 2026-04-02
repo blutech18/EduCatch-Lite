@@ -18,7 +18,7 @@ const ROLE_HOME: Record<string, string> = {
   admin: "/admin",
 };
 
-export function proxy(request: NextRequest) {
+export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Allow public routes
