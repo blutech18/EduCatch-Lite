@@ -1,36 +1,102 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# EduCatch Lite
+
+A simplified catch-up planner for students who miss classes due to competitions. Track missed lessons, generate study schedules, and monitor progress.
+
+## Tech Stack
+
+- **Frontend:** Next.js 14+ (App Router), TypeScript, Tailwind CSS
+- **Backend:** Convex (database + server functions)
+- **State Management:** Zustand (with persistence)
+- **Auth:** Email + password with bcrypt hashing
+
+## Features
+
+- **Authentication** — Register & login with email/password
+- **Dashboard** — Progress overview with stat cards and recent lessons
+- **Lessons** — Add, complete, and delete missed lessons
+- **Catch-up Plan** — Auto-generated study timeline based on difficulty rules
+- **Progress Tracking** — Real-time completion percentage
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+
+- Node.js 18+
+- A free [Convex](https://convex.dev) account
+
+### 1. Install dependencies
+
+```bash
+cd educatch-lite
+npm install
+```
+
+### 2. Set up Convex
+
+```bash
+npx convex dev
+```
+
+This will prompt you to log in and create a new Convex project. It will:
+- Create/connect to your Convex deployment
+- Generate types in `convex/_generated/`
+- Push the schema to your database
+- Set `NEXT_PUBLIC_CONVEX_URL` in `.env.local`
+
+### 3. Run the development server
+
+In a **separate terminal**:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+> **Note:** Keep `npx convex dev` running in one terminal for hot-reloading backend changes, and `npm run dev` in another for the frontend.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Project Structure
 
-## Learn More
+```
+educatch-lite/
+├── convex/                    # Convex backend
+│   ├── _generated/            # Auto-generated types
+│   ├── schema.ts              # Database schema (users, lessons)
+│   ├── users.ts               # Auth mutations (register, login)
+│   └── lessons.ts             # CRUD + stats + catch-up plan
+├── src/
+│   ├── app/                   # Next.js App Router pages
+│   │   ├── page.tsx           # Landing page
+│   │   ├── login/page.tsx     # Login
+│   │   ├── register/page.tsx  # Registration
+│   │   ├── dashboard/page.tsx # Dashboard with progress
+│   │   ├── lessons/page.tsx   # Lesson management
+│   │   └── plan/page.tsx      # Catch-up plan timeline
+│   ├── components/
+│   │   ├── forms/             # LessonForm
+│   │   ├── layout/            # Navbar
+│   │   ├── providers/         # ConvexClientProvider
+│   │   └── ui/                # Button, Input, Select, StatCard, ProgressBar, etc.
+│   └── store/
+│       ├── authStore.ts       # Zustand auth state (persisted)
+│       └── lessonStore.ts     # Zustand lesson loading state
+├── .env.local                 # NEXT_PUBLIC_CONVEX_URL
+└── package.json
+```
 
-To learn more about Next.js, take a look at the following resources:
+## Catch-up Plan Logic
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+The plan generator uses rule-based duration allocation:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+| Difficulty | Recommended Study Duration |
+|------------|---------------------------|
+| Easy       | 30 minutes                |
+| Medium     | 60 minutes                |
+| Hard       | 90 minutes                |
 
-## Deploy on Vercel
+Lessons are ordered sequentially by lesson date (ascending).
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Database Schema
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+**users:** `name`, `email`, `password` (hashed), `createdAt`
+**lessons:** `userId`, `title`, `subject`, `lessonDate`, `difficulty`, `estimatedMinutes`, `status`, `createdAt`
