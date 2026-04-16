@@ -3,8 +3,6 @@
 import { useQuery } from "convex/react";
 import { useEffect } from "react";import { api } from "../../../convex/_generated/api";
 import { Id } from "../../../convex/_generated/dataModel";
-import DashboardNavbar from "@/components/layout/DashboardNavbar";
-import DashboardSidebar from "@/components/layout/DashboardSidebar";
 import RoleGuard from "@/components/auth/RoleGuard";
 import ProgressBar from "@/components/ui/ProgressBar";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
@@ -48,13 +46,13 @@ function StudentCard({
   };
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-white/[0.06] bg-slate-800/30 transition-all hover:border-white/[0.1]">
+    <div className="overflow-hidden rounded-2xl border border-white/6 bg-slate-800/30 transition-all hover:border-white/10">
       <button
         className="flex w-full items-center justify-between p-5 text-left"
         onClick={() => toggleStudent(student._id)}
       >
         <div className="flex items-center gap-4">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-violet-500 to-indigo-600 text-sm font-bold text-white">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-linear-to-br from-violet-500 to-indigo-600 text-sm font-bold text-white">
             {student.name.charAt(0).toUpperCase()}
           </div>
           <div>
@@ -130,9 +128,6 @@ function TeacherDashboard() {
   }, [setHeader]);
 
   return (
-    <div className="min-h-screen bg-slate-950">
-      <DashboardSidebar />
-      <DashboardNavbar />
       <main className="pt-16">
         <div className="mx-auto max-w-7xl px-6 py-10 lg:px-8">
           {students === undefined ? (
@@ -152,6 +147,5 @@ function TeacherDashboard() {
           )}
         </div>
       </main>
-    </div>
   );
 }

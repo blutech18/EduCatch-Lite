@@ -5,8 +5,6 @@ import { useQuery } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import { useAuthStore } from "@/store/authStore";
 import { useDashboardLayout } from "@/components/providers/DashboardLayoutProvider";
-import DashboardNavbar from "@/components/layout/DashboardNavbar";
-import DashboardSidebar from "@/components/layout/DashboardSidebar";
 import EmptyState from "@/components/ui/EmptyState";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import { PartyPopper, ClipboardList, CalendarHeart } from "lucide-react";
@@ -47,9 +45,6 @@ function Plan() {
   const totalDuration = plan?.reduce((sum, item) => sum + item.recommendedDuration, 0);
 
   return (
-    <div className="min-h-screen bg-slate-950">
-      <DashboardSidebar />
-      <DashboardNavbar />
       <main className="pt-16">
         <div className="mx-auto max-w-7xl px-6 py-10 lg:px-8">
           {plan === undefined || plan === null ? (
@@ -58,7 +53,7 @@ function Plan() {
             <EmptyState icon={<PartyPopper className="mx-auto h-12 w-12 text-slate-500" />} title="All caught up!" description="You have no pending lessons. Add missed lessons from the Lessons page to generate a catch-up plan." />
           ) : (
             <>
-              <div className="mb-8 rounded-2xl border border-white/[0.06] bg-gradient-to-r from-violet-500/10 to-indigo-500/10 p-6">
+              <div className="mb-8 rounded-2xl border border-white/6 bg-linear-to-r from-violet-500/10 to-indigo-500/10 p-6">
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                   <div>
                     <h2 className="flex items-center gap-2 text-lg font-semibold text-white">
@@ -114,6 +109,5 @@ function Plan() {
           )}
         </div>
       </main>
-    </div>
   );
 }

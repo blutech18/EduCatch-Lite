@@ -1,6 +1,8 @@
 "use client";
 
 import { DashboardLayoutProvider, useDashboardLayout } from "@/components/providers/DashboardLayoutProvider";
+import DashboardSidebar from "@/components/layout/DashboardSidebar";
+import DashboardNavbar from "@/components/layout/DashboardNavbar";
 import { GraduationCap, ClipboardList } from "lucide-react";
 
 const TEACHER_NAV = [
@@ -13,8 +15,10 @@ function TeacherContent({ children }: { children: React.ReactNode }) {
   return (
     <div
       style={{ paddingLeft: collapsed ? 68 : 240 }}
-      className="transition-[padding-left] duration-300 ease-in-out"
+      className="min-h-screen bg-slate-950 transition-[padding-left] duration-300 ease-in-out"
     >
+      <DashboardSidebar />
+      <DashboardNavbar />
       {children}
     </div>
   );

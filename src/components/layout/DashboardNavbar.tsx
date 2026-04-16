@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { memo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/authStore";
 import { useMutation } from "convex/react";
@@ -9,7 +9,7 @@ import { LogOut } from "lucide-react";
 import { useDashboardLayout } from "@/components/providers/DashboardLayoutProvider";
 import ConfirmModal from "@/components/ui/ConfirmModal";
 
-export default function DashboardNavbar() {
+export default memo(function DashboardNavbar() {
   const router = useRouter();
   const { user, logout, sessionToken } = useAuthStore();
   const logoutMutation = useMutation(api.users.logout);
@@ -33,7 +33,7 @@ export default function DashboardNavbar() {
   return (
     <>
       <header
-        className={`fixed top-0 right-0 z-30 flex h-16 items-center justify-between border-b border-white/[0.06] bg-slate-950/80 px-6 backdrop-blur-xl transition-[left] duration-300 ease-in-out ${
+        className={`fixed top-0 right-0 z-30 flex h-16 items-center justify-between border-b border-white/6 bg-slate-950/80 px-6 backdrop-blur-xl transition-[left] duration-300 ease-in-out ${
           collapsed ? "left-[68px]" : "left-60"
         }`}
       >
@@ -67,4 +67,4 @@ export default function DashboardNavbar() {
       />
     </>
   );
-}
+});

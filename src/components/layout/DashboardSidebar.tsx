@@ -1,5 +1,6 @@
 "use client";
 
+import { memo } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuthStore } from "@/store/authStore";
@@ -7,7 +8,7 @@ import { ChevronLeft } from "lucide-react";
 import Logo from "@/components/ui/Logo";
 import { useDashboardLayout } from "@/components/providers/DashboardLayoutProvider";
 
-export default function DashboardSidebar() {
+export default memo(function DashboardSidebar() {
   const pathname = usePathname();
   const { user } = useAuthStore();
   const { collapsed, setCollapsed, navItems, roleLabel, basePath } = useDashboardLayout();
@@ -17,10 +18,10 @@ export default function DashboardSidebar() {
   return (
     <aside
       style={{ width: collapsed ? 68 : 240 }}
-      className="fixed inset-y-0 left-0 z-40 flex flex-col border-r border-white/[0.06] bg-slate-900/80 backdrop-blur-xl transition-[width] duration-300 ease-in-out"
+      className="fixed inset-y-0 left-0 z-40 flex flex-col border-r border-white/6 bg-slate-900/80 backdrop-blur-xl transition-[width] duration-300 ease-in-out"
     >
       {/* Header */}
-      <div className="flex h-16 shrink-0 items-center border-b border-white/[0.06] overflow-hidden">
+      <div className="flex h-16 shrink-0 items-center border-b border-white/6 overflow-hidden">
         <div className="flex h-16 w-[68px] shrink-0 items-center justify-center">
           <Logo size="sm" />
         </div>
@@ -85,10 +86,10 @@ export default function DashboardSidebar() {
       </nav>
 
       {/* User */}
-      <div className="border-t border-white/[0.06] py-3 overflow-x-hidden">
+      <div className="border-t border-white/6 py-3 overflow-x-hidden">
         <div className="mx-2 flex h-10 items-center rounded-xl bg-slate-800/50">
           <div className="flex w-[52px] shrink-0 items-center justify-center">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-violet-500 to-indigo-600 text-xs font-bold text-white">
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-linear-to-br from-violet-500 to-indigo-600 text-xs font-bold text-white">
               {user.name?.charAt(0).toUpperCase()}
             </div>
           </div>
@@ -103,4 +104,4 @@ export default function DashboardSidebar() {
       </div>
     </aside>
   );
-}
+});

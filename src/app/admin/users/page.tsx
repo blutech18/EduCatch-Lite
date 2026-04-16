@@ -4,8 +4,6 @@ import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
 import { Id } from "../../../../convex/_generated/dataModel";
-import AdminNavbar from "@/components/layout/DashboardNavbar";
-import AdminSidebar from "@/components/layout/DashboardSidebar";
 import RoleGuard from "@/components/auth/RoleGuard";
 import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
@@ -109,9 +107,6 @@ function UsersManager() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950">
-      <AdminSidebar />
-      <AdminNavbar />
       <main className="pt-16">
         <div className="mx-auto max-w-7xl px-6 py-10 lg:px-8">
         <div className="mb-8 flex items-center justify-end">
@@ -121,7 +116,7 @@ function UsersManager() {
         </div>
 
         {showTeacherForm && (
-          <div className="mb-8 rounded-2xl border border-white/[0.06] bg-slate-900/50 p-6 sm:p-8">
+          <div className="mb-8 rounded-2xl border border-white/6 bg-slate-900/50 p-6 sm:p-8">
             <h2 className="mb-5 flex items-center gap-2 text-lg font-semibold text-white">
               <GraduationCap className="h-5 w-5 text-emerald-400" /> Create Teacher Account
             </h2>
@@ -159,7 +154,7 @@ function UsersManager() {
         ) : filteredUsers?.length === 0 ? (
           <EmptyState icon={<Users className="mx-auto h-12 w-12 text-slate-500" />} title="No users found" description="No users match this filter." />
         ) : (
-          <div className="overflow-hidden rounded-2xl border border-white/[0.06] bg-slate-800/30">
+          <div className="overflow-hidden rounded-2xl border border-white/6 bg-slate-800/30">
             <div className="grid grid-cols-12 gap-4 border-b border-white/5 px-5 py-3">
               <p className="col-span-4 text-xs font-medium uppercase tracking-wider text-slate-500">User</p>
               <p className="col-span-3 text-xs font-medium uppercase tracking-wider text-slate-500">Email</p>
@@ -168,9 +163,9 @@ function UsersManager() {
               <p className="col-span-1 text-xs font-medium uppercase tracking-wider text-slate-500">Action</p>
             </div>
             {filteredUsers?.map((u) => (
-              <div key={u._id} className="grid grid-cols-12 items-center gap-4 border-b border-white/[0.04] px-5 py-4 transition-colors last:border-0 hover:bg-white/[0.02]">
+              <div key={u._id} className="grid grid-cols-12 items-center gap-4 border-b border-white/4 px-5 py-4 transition-colors last:border-0 hover:bg-white/2">
                 <div className="col-span-4 flex items-center gap-3">
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-violet-500 to-indigo-600 text-xs font-bold text-white">{u.name.charAt(0).toUpperCase()}</div>
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-linear-to-br from-violet-500 to-indigo-600 text-xs font-bold text-white">{u.name.charAt(0).toUpperCase()}</div>
                   <span className="truncate text-sm font-medium text-white">{u.name}</span>
                 </div>
                 <p className="col-span-3 truncate text-sm text-slate-400">{u.email}</p>
@@ -193,6 +188,5 @@ function UsersManager() {
         )}
         </div>
       </main>
-    </div>
   );
 }

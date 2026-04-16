@@ -1,15 +1,18 @@
 "use client";
 
-import { useQuery } from "convex/react";
-import { useEffect } from "react";import { api } from "../../../../convex/_generated/api";
-import DashboardNavbar from "@/components/layout/DashboardNavbar";
-import DashboardSidebar from "@/components/layout/DashboardSidebar";
+import { useQuery, useMutation } from "convex/react";
+import { useState, useEffect } from "react";
+import { api } from "../../../../convex/_generated/api";
+import { Id } from "../../../../convex/_generated/dataModel";
 import RoleGuard from "@/components/auth/RoleGuard";
+import TeacherLessonForm from "@/components/forms/TeacherLessonForm";
+import Button from "@/components/ui/Button";
 import { useAuthStore } from "@/store/authStore";
+import { useTeacherStore } from "@/store/teacherStore";
 import { useDashboardLayout } from "@/components/providers/DashboardLayoutProvider";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import EmptyState from "@/components/ui/EmptyState";
-import { ClipboardList, Inbox } from "lucide-react";
+import { ClipboardList, Inbox, Plus, Trash2 } from "lucide-react";
 
 export default function TeacherLessonsPage() {
   return (
@@ -22,7 +25,11 @@ export default function TeacherLessonsPage() {
 function TeacherLessons() {
   const { sessionToken } = useAuthStore();
   const { setHeader } = useDashboardLayout();
+  const { showLessonForm, toggleLessonForm, setShowLessonForm } = useTeacherStore();
   const data = useQuery(api.teachers.getAllLessonsOverview, sessionToken ? { sessionToken } : "skip");
+  const deleteLesson = useMutation(api.lessons.deleteLesson);
+  const updateStatus = useMutation(api.lessons.updateStatus);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   useEffect(() => {
     setHeader("All Student Lessons", `Overview of all missed lessons (${data?.length ?? 0} total)`, <ClipboardList className="h-5 w-5 text-emerald-400" />);
@@ -37,34 +44,63 @@ function TeacherLessons() {
     return styles[difficulty] || styles.medium;
   };
 
+  const handleToggleStatus = async (lessonId: Id<"lessons">, currentStatus: string) => {
+    try {
+      await updateStatus({ lessonId, status: currentStatus === "completed" ? "pending" : "completed", sessionToken: sessionToken ?? undefined });
+    } catch (error) { console.error("Failed to update status:", error); }
+  };
+
+  const handleDelete = async (lessonId: Id<"lessons">) => {
+    setDeletingId(lessonId);
+    try {
+      await deleteLesson({ lessonId, sessionToken: sessionToken ?? undefined });
+    } catch (error) { console.error("Failed to delete lesson:", error); }
+    finally { setDeletingId(null); }
+  };
+
   return (
-    <div className="min-h-screen bg-slate-950">
-      <DashboardSidebar />
-      <DashboardNavbar />
       <main className="pt-16">
         <div className="mx-auto max-w-7xl px-6 py-10 lg:px-8">
+          <div className="mb-8 flex items-center justify-end">
+            <Button onClick={toggleLessonForm} variant={showLessonForm ? "secondary" : "primary"}>
+              {showLessonForm ? "Cancel" : <><Plus className="h-4 w-4" /> Add Lesson for Student</>}
+            </Button>
+          </div>
+
+          {showLessonForm && (
+            <div className="mb-8 rounded-2xl border border-white/6 bg-slate-900/50 p-6 sm:p-8">
+              <h2 className="mb-5 flex items-center gap-2 text-lg font-semibold text-white">
+                <ClipboardList className="h-5 w-5 text-violet-400" /> Add a Lesson for Student
+              </h2>
+              <TeacherLessonForm onSuccess={() => setShowLessonForm(false)} />
+            </div>
+          )}
+
           {data === undefined ? (
             <LoadingSpinner text="Loading lessons..." />
           ) : data === null || data.length === 0 ? (
             <EmptyState
               icon={<Inbox className="mx-auto h-12 w-12 text-slate-500" />}
               title="No lessons recorded"
-              description="Students haven't added any missed lessons yet."
+              description='Click "Add Lesson for Student" to create a lesson for your students.'
             />
           ) : (
             <div className="space-y-3">
               {data.map((item) => (
                 <div
                   key={item._id}
-                  className="rounded-2xl border border-white/[0.06] bg-slate-800/30 p-5 transition-all hover:border-white/[0.1]"
+                  className="group rounded-2xl border border-white/6 bg-slate-800/30 p-5 transition-all hover:border-white/10"
                 >
                   <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <div className="flex items-start gap-4">
-                      <div className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-md ${item.status === "completed" ? "bg-emerald-500/20 text-emerald-400" : "bg-white/5 text-slate-600"}`}>
+                      <button
+                        onClick={() => handleToggleStatus(item._id as Id<"lessons">, item.status)}
+                        className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-md border transition-all ${item.status === "completed" ? "border-emerald-500/50 bg-emerald-500/20 text-emerald-400" : "border-white/20 bg-white/5 text-transparent hover:border-violet-500/50 hover:bg-violet-500/10"}`}
+                      >
                         <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" strokeWidth="3" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
                         </svg>
-                      </div>
+                      </button>
                       <div>
                         <h3 className={`text-sm font-semibold ${item.status === "completed" ? "text-slate-500 line-through" : "text-white"}`}>{item.title}</h3>
                         <div className="mt-1.5 flex flex-wrap items-center gap-2">
@@ -76,9 +112,14 @@ function TeacherLessons() {
                         <p className="mt-1 text-xs text-slate-500">Student: {item.studentName}</p>
                       </div>
                     </div>
-                    <span className={`shrink-0 rounded-full px-3 py-1 text-xs font-medium ${item.status === "completed" ? "bg-emerald-500/10 text-emerald-400" : "bg-amber-500/10 text-amber-400"}`}>
-                      {item.status === "completed" ? "Completed" : "Pending"}
-                    </span>
+                    <div className="flex items-center gap-2 sm:shrink-0">
+                      <Button variant="ghost" size="sm" onClick={() => handleToggleStatus(item._id as Id<"lessons">, item.status)}>
+                        {item.status === "completed" ? "Undo" : "Mark Complete"}
+                      </Button>
+                      <Button variant="danger" size="sm" isLoading={deletingId === item._id} onClick={() => handleDelete(item._id as Id<"lessons">)}>
+                        <Trash2 className="h-3.5 w-3.5" /> Delete
+                      </Button>
+                    </div>
                   </div>
                 </div>
               ))}
@@ -86,6 +127,5 @@ function TeacherLessons() {
           )}
         </div>
       </main>
-    </div>
   );
 }

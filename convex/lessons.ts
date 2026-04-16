@@ -42,8 +42,10 @@ export const addLesson = mutation({
     sessionToken: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
+    let callerId: typeof args.userId | undefined;
     if (args.sessionToken) {
       const caller = await authenticateSession(ctx, args.sessionToken);
+      callerId = caller._id;
       if (caller.role === "student" && caller._id !== args.userId) {
         throw new Error("Access denied.");
       }
@@ -57,6 +59,7 @@ export const addLesson = mutation({
       difficulty: args.difficulty,
       estimatedMinutes: args.estimatedMinutes,
       status: "pending",
+      createdBy: callerId,
       createdAt: Date.now(),
     });
     return lessonId;

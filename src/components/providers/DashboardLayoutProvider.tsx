@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState, useRef, useCallback, ReactNode } from "react";
+import { createContext, useContext, useState, useRef, useCallback, useMemo, ReactNode } from "react";
 
 interface NavItem {
   href: string;
@@ -37,14 +37,17 @@ export function DashboardLayoutProvider({ children, navItems, roleLabel, basePat
 
   const setHeader = useCallback((title: string, subtitle: string, icon?: ReactNode) => {
     pageIconRef.current = icon ?? null;
-    setPageTitle(title);
-    setPageSubtitle(subtitle);
+    setPageTitle((prev) => (prev === title ? prev : title));
+    setPageSubtitle((prev) => (prev === subtitle ? prev : subtitle));
   }, []);
 
+  const value = useMemo(
+    () => ({ collapsed, setCollapsed, pageTitle, pageSubtitle, pageIconRef, setHeader, navItems, roleLabel, basePath }),
+    [collapsed, setCollapsed, pageTitle, pageSubtitle, setHeader, navItems, roleLabel, basePath]
+  );
+
   return (
-    <DashboardLayoutContext.Provider
-      value={{ collapsed, setCollapsed, pageTitle, pageSubtitle, pageIconRef, setHeader, navItems, roleLabel, basePath }}
-    >
+    <DashboardLayoutContext.Provider value={value}>
       {children}
     </DashboardLayoutContext.Provider>
   );

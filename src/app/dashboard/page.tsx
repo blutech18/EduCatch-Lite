@@ -5,8 +5,6 @@ import { useRouter } from "next/navigation";
 import { useQuery } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import { useAuthStore } from "@/store/authStore";
-import DashboardNavbar from "@/components/layout/DashboardNavbar";
-import DashboardSidebar from "@/components/layout/DashboardSidebar";
 import StatCard from "@/components/ui/StatCard";
 import ProgressBar from "@/components/ui/ProgressBar";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
@@ -43,9 +41,6 @@ function Dashboard() {
   if (!user) return null;
 
   return (
-    <div className="min-h-screen bg-slate-950">
-      <DashboardSidebar />
-      <DashboardNavbar />
       <main className="pt-16">
         <div className="mx-auto max-w-7xl px-6 py-10 lg:px-8">
           {stats === undefined || stats === null ? (
@@ -53,7 +48,7 @@ function Dashboard() {
           ) : (
             <>
               {/* Progress Section */}
-              <div className="mb-8 rounded-2xl border border-white/[0.06] bg-slate-800/30 p-6 sm:p-8">
+              <div className="mb-8 rounded-2xl border border-white/6 bg-slate-800/30 p-6 sm:p-8">
                 <div className="mb-2 flex items-center gap-3">
                   <Target className="h-6 w-6 text-violet-400" />
                   <h2 className="text-lg font-semibold text-white">Overall Progress</h2>
@@ -92,7 +87,7 @@ function Dashboard() {
                 ) : (
                   <div className="space-y-3">
                     {recentLessons.slice(0, 5).map((lesson) => (
-                      <div key={lesson._id} className="flex items-center justify-between rounded-xl border border-white/[0.06] bg-slate-800/40 px-5 py-4 transition-all hover:border-white/[0.1]">
+                      <div key={lesson._id} className="flex items-center justify-between rounded-xl border border-white/6 bg-slate-800/40 px-5 py-4 transition-all hover:border-white/10">
                         <div className="flex items-center gap-4">
                           <div className={`flex h-10 w-10 items-center justify-center rounded-lg text-sm ${lesson.status === "completed" ? "bg-emerald-500/15 text-emerald-400" : "bg-amber-500/15 text-amber-400"}`}>
                             {lesson.status === "completed" ? "✓" : "○"}
@@ -114,6 +109,5 @@ function Dashboard() {
           )}
         </div>
       </main>
-    </div>
   );
 }

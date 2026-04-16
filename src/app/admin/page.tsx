@@ -2,8 +2,6 @@
 
 import { useQuery } from "convex/react";
 import { api } from "../../../convex/_generated/api";
-import DashboardNavbar from "@/components/layout/DashboardNavbar";
-import DashboardSidebar from "@/components/layout/DashboardSidebar";
 import RoleGuard from "@/components/auth/RoleGuard";
 import StatCard from "@/components/ui/StatCard";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
@@ -34,9 +32,6 @@ function AdminDashboard() {
   const recentUsers = users?.slice(-5).reverse();
 
   return (
-    <div className="min-h-screen bg-slate-950">
-      <DashboardSidebar />
-      <DashboardNavbar />
       <main className="pt-16">
         <div className="mx-auto max-w-7xl px-6 py-10 lg:px-8">
 
@@ -89,7 +84,7 @@ function AdminDashboard() {
             <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-3">
               <Link
                 href="/admin/users"
-                className="group rounded-2xl border border-white/[0.06] bg-slate-800/30 p-6 transition-all hover:border-violet-500/30 hover:bg-slate-800/50"
+                className="group rounded-2xl border border-white/6 bg-slate-800/30 p-6 transition-all hover:border-violet-500/30 hover:bg-slate-800/50"
               >
                 <div className="mb-3 flex h-11 w-11 items-center justify-center rounded-xl bg-violet-500/15">
                   <Users className="h-5 w-5 text-violet-400" />
@@ -102,7 +97,7 @@ function AdminDashboard() {
 
               <Link
                 href="/admin/lessons"
-                className="group rounded-2xl border border-white/[0.06] bg-slate-800/30 p-6 transition-all hover:border-indigo-500/30 hover:bg-slate-800/50"
+                className="group rounded-2xl border border-white/6 bg-slate-800/30 p-6 transition-all hover:border-indigo-500/30 hover:bg-slate-800/50"
               >
                 <div className="mb-3 flex h-11 w-11 items-center justify-center rounded-xl bg-indigo-500/15">
                   <BookOpen className="h-5 w-5 text-indigo-400" />
@@ -113,7 +108,7 @@ function AdminDashboard() {
                 </p>
               </Link>
 
-              <div className="rounded-2xl border border-white/[0.06] bg-slate-800/30 p-6">
+              <div className="rounded-2xl border border-white/6 bg-slate-800/30 p-6">
                 <div className="mb-3 flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-500/15">
                   <CheckCircle2 className="h-5 w-5 text-emerald-400" />
                 </div>
@@ -152,10 +147,10 @@ function AdminDashboard() {
                   {recentUsers.map((u) => (
                     <div
                       key={u._id}
-                      className="flex items-center justify-between rounded-xl border border-white/[0.06] bg-slate-800/30 px-5 py-3.5"
+                      className="flex items-center justify-between rounded-xl border border-white/6 bg-slate-800/30 px-5 py-3.5"
                     >
                       <div className="flex items-center gap-3">
-                        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-violet-500 to-indigo-600 text-xs font-bold text-white">
+                        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-linear-to-br from-violet-500 to-indigo-600 text-xs font-bold text-white">
                           {u.name.charAt(0).toUpperCase()}
                         </div>
                         <div>
@@ -183,6 +178,5 @@ function AdminDashboard() {
         )}
         </div>
       </main>
-    </div>
   );
 }

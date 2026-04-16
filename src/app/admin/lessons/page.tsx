@@ -2,8 +2,6 @@
 
 import { useQuery } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
-import AdminNavbar from "@/components/layout/DashboardNavbar";
-import AdminSidebar from "@/components/layout/DashboardSidebar";
 import RoleGuard from "@/components/auth/RoleGuard";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import EmptyState from "@/components/ui/EmptyState";
@@ -45,9 +43,6 @@ function AdminLessons() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950">
-      <AdminSidebar />
-      <AdminNavbar />
       <main className="pt-16">
         <div className="mx-auto max-w-7xl px-6 py-10 lg:px-8">
 
@@ -78,7 +73,7 @@ function AdminLessons() {
         ) : (
           <div className="space-y-3">
             {filtered?.map((item) => (
-              <div key={item._id} className="rounded-2xl border border-white/[0.06] bg-slate-800/30 p-5 transition-all hover:border-white/[0.1]">
+              <div key={item._id} className="rounded-2xl border border-white/6 bg-slate-800/30 p-5 transition-all hover:border-white/10">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <div className="flex items-start gap-4">
                     <div className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-md ${item.status === "completed" ? "bg-emerald-500/20 text-emerald-400" : "bg-white/5 text-slate-600"}`}>
@@ -107,6 +102,5 @@ function AdminLessons() {
         )}
         </div>
       </main>
-    </div>
   );
 }

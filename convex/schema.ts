@@ -28,6 +28,7 @@ export default defineSchema({
     ),
     estimatedMinutes: v.number(),
     status: v.union(v.literal("pending"), v.literal("completed")),
+    createdBy: v.optional(v.id("users")),
     createdAt: v.number(),
   }).index("by_userId", ["userId"]),
 

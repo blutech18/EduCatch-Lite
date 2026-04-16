@@ -7,8 +7,6 @@ import { Id } from "../../../convex/_generated/dataModel";
 import { useAuthStore } from "@/store/authStore";
 import { useLessonStore } from "@/store/lessonStore";
 import { useDashboardLayout } from "@/components/providers/DashboardLayoutProvider";
-import DashboardNavbar from "@/components/layout/DashboardNavbar";
-import DashboardSidebar from "@/components/layout/DashboardSidebar";
 import LessonForm from "@/components/forms/LessonForm";
 import Button from "@/components/ui/Button";
 import EmptyState from "@/components/ui/EmptyState";
@@ -64,9 +62,6 @@ function Lessons() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950">
-      <DashboardSidebar />
-      <DashboardNavbar />
       <main className="pt-16">
         <div className="mx-auto max-w-7xl px-6 py-10 lg:px-8">
           <div className="mb-8 flex items-center justify-end">
@@ -76,7 +71,7 @@ function Lessons() {
           </div>
 
           {showForm && (
-            <div className="mb-8 rounded-2xl border border-white/[0.06] bg-slate-900/50 p-6 sm:p-8">
+            <div className="mb-8 rounded-2xl border border-white/6 bg-slate-900/50 p-6 sm:p-8">
               <h2 className="mb-5 flex items-center gap-2 text-lg font-semibold text-white">
                 <ClipboardList className="h-5 w-5 text-violet-400" /> Add a Missed Lesson
               </h2>
@@ -97,7 +92,7 @@ function Lessons() {
           ) : (
             <div className="space-y-3">
               {filteredLessons?.map((lesson) => (
-                <div key={lesson._id} className="group rounded-2xl border border-white/[0.06] bg-slate-800/30 p-5 transition-all hover:border-white/[0.1] hover:bg-slate-800/50">
+                <div key={lesson._id} className="group rounded-2xl border border-white/6 bg-slate-800/30 p-5 transition-all hover:border-white/10 hover:bg-slate-800/50">
                   <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                     <div className="flex items-start gap-4">
                       <button onClick={() => handleToggleStatus(lesson._id, lesson.status)} className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-md border transition-all ${lesson.status === "completed" ? "border-emerald-500/50 bg-emerald-500/20 text-emerald-400" : "border-white/20 bg-white/5 text-transparent hover:border-violet-500/50 hover:bg-violet-500/10"}`}>
@@ -124,6 +119,5 @@ function Lessons() {
           )}
         </div>
       </main>
-    </div>
   );
 }
