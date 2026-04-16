@@ -18,12 +18,14 @@ export default function RoleGuard({
 }: RoleGuardProps) {
   const router = useRouter();
   const { user, isAuthenticated } = useAuthStore();
-  const [hydrated, setHydrated] = useState(false);
+  // Initialize to true if Zustand has already rehydrated (common on navigations)
+  const [hydrated, setHydrated] = useState(() => useAuthStore.persist.hasHydrated());
 
-  // Wait one tick for Zustand persist to rehydrate from localStorage
   useEffect(() => {
-    setHydrated(true);
-  }, []);
+    if (hydrated) return;
+    // Subscribe to finish-hydration event so we only unblock once localStorage is read
+    return useAuthStore.persist.onFinishHydration(() => setHydrated(true));
+  }, [hydrated]);
 
   useEffect(() => {
     if (!hydrated) return;
