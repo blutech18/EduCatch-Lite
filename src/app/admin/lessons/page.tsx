@@ -7,9 +7,9 @@ import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import EmptyState from "@/components/ui/EmptyState";
 import { useAdminStore } from "@/store/adminStore";
 import { useAuthStore } from "@/store/authStore";
-import { useDashboardLayout } from "@/components/providers/DashboardLayoutProvider";
+import { useDashboardLayoutStore } from "@/store/dashboardLayoutStore";
 import { BookOpen, Inbox } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, useMemo, useCallback } from "react";
 
 export default function AdminLessonsPage() {
   return (
@@ -20,27 +20,30 @@ export default function AdminLessonsPage() {
 }
 
 function AdminLessons() {
-  const { sessionToken } = useAuthStore();
-  const { setHeader } = useDashboardLayout();
+  const sessionToken = useAuthStore((s) => s.sessionToken);
+  const setHeader = useDashboardLayoutStore((s) => s.setHeader);
   const data = useQuery(api.admin.getAllLessons, sessionToken ? { sessionToken } : "skip");
-  const { lessonFilter, setLessonFilter } = useAdminStore();
+  const lessonFilter = useAdminStore((s) => s.lessonFilter);
+  const setLessonFilter = useAdminStore((s) => s.setLessonFilter);
+  const headerIcon = useMemo(() => <BookOpen className="h-5 w-5 text-amber-400" />, []);
 
   useEffect(() => {
-    setHeader("All Lessons", `System-wide view of all student lessons (${data?.length ?? 0} total)`, <BookOpen className="h-5 w-5 text-amber-400" />);
-  }, [setHeader, data?.length]);
+    setHeader("All Lessons", `System-wide view of all student lessons (${data?.length ?? 0} total)`, headerIcon);
+  }, [setHeader, data?.length, headerIcon]);
 
-  const filtered = data?.filter(
-    (l) => lessonFilter === "all" || l.status === lessonFilter
+  const filtered = useMemo(
+    () => data?.filter((l) => lessonFilter === "all" || l.status === lessonFilter),
+    [data, lessonFilter]
   );
 
-  const getDifficultyBadge = (difficulty: string) => {
+  const getDifficultyBadge = useCallback((difficulty: string) => {
     const styles: Record<string, string> = {
       easy: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
       medium: "bg-amber-500/10 text-amber-400 border-amber-500/20",
       hard: "bg-red-500/10 text-red-400 border-red-500/20",
     };
     return styles[difficulty] || styles.medium;
-  };
+  }, []);
 
   return (
       <main className="pt-16">

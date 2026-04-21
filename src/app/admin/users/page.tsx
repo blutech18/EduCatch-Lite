@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
 import { Id } from "../../../../convex/_generated/dataModel";
@@ -11,7 +11,7 @@ import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import EmptyState from "@/components/ui/EmptyState";
 import { useAdminStore } from "@/store/adminStore";
 import { useAuthStore } from "@/store/authStore";
-import { useDashboardLayout } from "@/components/providers/DashboardLayoutProvider";
+import { useDashboardLayoutStore } from "@/store/dashboardLayoutStore";
 import { Users, Trash2, UserPlus, GraduationCap, ShieldCheck } from "lucide-react";
 import bcrypt from "bcryptjs";
 
@@ -24,26 +24,25 @@ export default function AdminUsersPage() {
 }
 
 function UsersManager() {
-  const { sessionToken } = useAuthStore();
-  const { setHeader } = useDashboardLayout();
+  const sessionToken = useAuthStore((s) => s.sessionToken);
+  const setHeader = useDashboardLayoutStore((s) => s.setHeader);
   const users = useQuery(api.admin.getAllUsers, sessionToken ? { sessionToken } : "skip");
+  const headerIcon = useMemo(() => <Users className="h-5 w-5 text-violet-400" />, []);
 
   useEffect(() => {
-    setHeader("User Management", `${users?.length ?? 0} total users registered`, <Users className="h-5 w-5 text-violet-400" />);
-  }, [setHeader, users?.length]);
+    setHeader("User Management", `${users?.length ?? 0} total users registered`, headerIcon);
+  }, [setHeader, users?.length, headerIcon]);
 
   const createTeacher = useMutation(api.admin.createTeacher);
   const deleteUser = useMutation(api.admin.deleteUser);
 
-  const {
-    userFilter,
-    setUserFilter,
-    showTeacherForm,
-    toggleTeacherForm,
-    setShowTeacherForm,
-    deletingUserId,
-    setDeletingUserId,
-  } = useAdminStore();
+  const userFilter = useAdminStore((s) => s.userFilter);
+  const setUserFilter = useAdminStore((s) => s.setUserFilter);
+  const showTeacherForm = useAdminStore((s) => s.showTeacherForm);
+  const toggleTeacherForm = useAdminStore((s) => s.toggleTeacherForm);
+  const setShowTeacherForm = useAdminStore((s) => s.setShowTeacherForm);
+  const deletingUserId = useAdminStore((s) => s.deletingUserId);
+  const setDeletingUserId = useAdminStore((s) => s.setDeletingUserId);
 
   const [formData, setFormData] = useState({ name: "", email: "", password: "" });
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -96,15 +95,16 @@ function UsersManager() {
     }
   };
 
-  const filteredUsers = users?.filter(
-    (u) => userFilter === "all" || u.role === userFilter
+  const filteredUsers = useMemo(
+    () => users?.filter((u) => userFilter === "all" || u.role === userFilter),
+    [users, userFilter]
   );
 
-  const roleBadge = (role: string) => {
+  const roleBadge = useCallback((role: string) => {
     if (role === "admin") return "border-amber-500/20 bg-amber-500/10 text-amber-400";
     if (role === "teacher") return "border-emerald-500/20 bg-emerald-500/10 text-emerald-400";
     return "border-violet-500/20 bg-violet-500/10 text-violet-400";
-  };
+  }, []);
 
   return (
       <main className="pt-16">

@@ -1,8 +1,9 @@
 "use client";
 
-import { DashboardLayoutProvider, useDashboardLayout } from "@/components/providers/DashboardLayoutProvider";
+import { DashboardLayoutProvider } from "@/components/providers/DashboardLayoutProvider";
 import DashboardSidebar from "@/components/layout/DashboardSidebar";
 import DashboardNavbar from "@/components/layout/DashboardNavbar";
+import { useDashboardLayoutStore } from "@/store/dashboardLayoutStore";
 import { LayoutDashboard, BookOpen, CalendarHeart } from "lucide-react";
 
 const STUDENT_NAV = [
@@ -12,7 +13,7 @@ const STUDENT_NAV = [
 ];
 
 function StudentContent({ children }: { children: React.ReactNode }) {
-  const { collapsed } = useDashboardLayout();
+  const collapsed = useDashboardLayoutStore((s) => s.collapsed);
   return (
     <div
       style={{ paddingLeft: collapsed ? 68 : 240 }}

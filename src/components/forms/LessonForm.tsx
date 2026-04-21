@@ -32,7 +32,8 @@ interface LessonFormProps {
 }
 
 export default function LessonForm({ onSuccess }: LessonFormProps) {
-  const { user, sessionToken } = useAuthStore();
+  const user = useAuthStore((s) => s.user);
+  const sessionToken = useAuthStore((s) => s.sessionToken);
   const addLesson = useMutation(api.lessons.addLesson);
 
   const [formData, setFormData] = useState({

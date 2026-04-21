@@ -1,34 +1,39 @@
 "use client";
 
-import { memo, useState } from "react";
+import { memo, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/authStore";
 import { useMutation } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import { LogOut } from "lucide-react";
-import { useDashboardLayout } from "@/components/providers/DashboardLayoutProvider";
+import { useDashboardLayoutStore } from "@/store/dashboardLayoutStore";
 import ConfirmModal from "@/components/ui/ConfirmModal";
 
 export default memo(function DashboardNavbar() {
   const router = useRouter();
-  const { user, logout, sessionToken } = useAuthStore();
+  const user = useAuthStore((s) => s.user);
+  const logout = useAuthStore((s) => s.logout);
+  const sessionToken = useAuthStore((s) => s.sessionToken);
   const logoutMutation = useMutation(api.users.logout);
-  const { collapsed, pageTitle, pageSubtitle, pageIconRef } = useDashboardLayout();
+  const collapsed = useDashboardLayoutStore((s) => s.collapsed);
+  const pageTitle = useDashboardLayoutStore((s) => s.pageTitle);
+  const pageSubtitle = useDashboardLayoutStore((s) => s.pageSubtitle);
+  const pageIcon = useDashboardLayoutStore((s) => s.pageIcon);
   const [showLogout, setShowLogout] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
 
-  const handleLogout = async () => {
+  const handleLogout = useCallback(async () => {
     setLoggingOut(true);
     if (sessionToken) {
       try { await logoutMutation({ sessionToken }); } catch {}
     }
     logout();
     router.push("/login");
-  };
+  }, [sessionToken, logoutMutation, logout, router]);
 
   if (!user) return null;
 
-  const icon = pageIconRef.current;
+  const icon = pageIcon;
 
   return (
     <>

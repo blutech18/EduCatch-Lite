@@ -1,13 +1,15 @@
 "use client";
 
-import { useState, FormEvent } from "react";
+import { useState, useMemo, FormEvent } from "react";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import { Id } from "../../../convex/_generated/dataModel";
 import Input from "@/components/ui/Input";
 import Select from "@/components/ui/Select";
+import Textarea from "@/components/ui/Textarea";
 import Button from "@/components/ui/Button";
 import { useAuthStore } from "@/store/authStore";
+import { parseConvexError } from "@/lib/errors";
 
 const difficultyOptions = [
   { value: "easy", label: "Easy" },
@@ -33,7 +35,7 @@ interface TeacherLessonFormProps {
 }
 
 export default function TeacherLessonForm({ onSuccess }: TeacherLessonFormProps) {
-  const { sessionToken } = useAuthStore();
+  const sessionToken = useAuthStore((s) => s.sessionToken);
   const addLesson = useMutation(api.lessons.addLesson);
   const students = useQuery(api.teachers.getAllStudents, sessionToken ? { sessionToken } : "skip");
 
@@ -44,17 +46,19 @@ export default function TeacherLessonForm({ onSuccess }: TeacherLessonFormProps)
     lessonDate: "",
     difficulty: "",
     estimatedMinutes: "",
+    content: "",
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [formError, setFormError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const studentOptions = [
+  const studentOptions = useMemo(() => [
     ...(students && students.length > 1 ? [{ value: "__all__", label: "All Students" }] : []),
     ...(students ?? []).map((s) => ({
       value: s._id,
       label: `${s.name} (${s.email})`,
     })),
-  ];
+  ], [students]);
 
   const validate = () => {
     const newErrors: Record<string, string> = {};
@@ -69,12 +73,19 @@ export default function TeacherLessonForm({ onSuccess }: TeacherLessonFormProps)
     ) {
       newErrors.estimatedMinutes = "Enter a valid duration";
     }
+    if (!formData.content.trim()) {
+      newErrors.content = "Please write the lesson content for your students";
+    } else if (formData.content.trim().length < 20) {
+      newErrors.content =
+        "Lesson content should be at least 20 characters so students have enough to read";
+    }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    setFormError("");
     if (!validate()) return;
 
     setIsSubmitting(true);
@@ -93,6 +104,7 @@ export default function TeacherLessonForm({ onSuccess }: TeacherLessonFormProps)
             lessonDate: formData.lessonDate,
             difficulty: formData.difficulty as "easy" | "medium" | "hard",
             estimatedMinutes: Number(formData.estimatedMinutes),
+            content: formData.content.trim(),
             sessionToken: sessionToken ?? undefined,
           })
         )
@@ -104,11 +116,12 @@ export default function TeacherLessonForm({ onSuccess }: TeacherLessonFormProps)
         lessonDate: "",
         difficulty: "",
         estimatedMinutes: "",
+        content: "",
       });
       setErrors({});
       onSuccess?.();
     } catch (error) {
-      console.error("Failed to add lesson:", error);
+      setFormError(parseConvexError(error, "Failed to add lesson. Please try again."));
     } finally {
       setIsSubmitting(false);
     }
@@ -116,6 +129,11 @@ export default function TeacherLessonForm({ onSuccess }: TeacherLessonFormProps)
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
+      {formError && (
+        <div className="rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-400">
+          {formError}
+        </div>
+      )}
       <Select
         label="Student"
         options={studentOptions}
@@ -182,6 +200,28 @@ export default function TeacherLessonForm({ onSuccess }: TeacherLessonFormProps)
           error={errors.estimatedMinutes}
         />
       </div>
+
+      <Textarea
+        label="Lesson Content"
+        rows={10}
+        placeholder={
+          "Write the full lesson here so your student can read and study from it.\n\n" +
+          "Example — Subtraction:\n" +
+          "Subtraction is the process of taking one number away from another. " +
+          "When we subtract, we find the difference between two numbers.\n\n" +
+          "Example: 10 − 4 = 6\n\n" +
+          "Tips:\n" +
+          "• Always start with the bigger number.\n" +
+          "• The minus sign (−) means 'take away'.\n" +
+          "• Practice with small numbers first, then move to bigger ones."
+        }
+        value={formData.content}
+        onChange={(e) =>
+          setFormData((prev) => ({ ...prev, content: e.target.value }))
+        }
+        error={errors.content}
+        hint="This is what the student will read on their lessons page."
+      />
 
       <Button type="submit" isLoading={isSubmitting} className="w-full">
         {formData.studentId === "__all__"

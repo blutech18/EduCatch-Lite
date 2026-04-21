@@ -32,7 +32,7 @@ const NAV_ITEMS: Record<UserRole, { href: string; label: string; icon: React.Rea
 
 export default function Sidebar() {
   const pathname = usePathname();
-  const { user } = useAuthStore();
+  const user = useAuthStore((s) => s.user);
 
   if (!user) return null;
 
@@ -40,7 +40,7 @@ export default function Sidebar() {
   const navItems = NAV_ITEMS[role];
 
   return (
-    <aside className="hidden lg:fixed lg:inset-y-0 lg:left-0 lg:z-40 lg:flex lg:w-64 lg:flex-col lg:border-r lg:border-white/[0.06] lg:bg-slate-900/50 lg:pt-20 lg:backdrop-blur-xl">
+    <aside className="hidden lg:fixed lg:inset-y-0 lg:left-0 lg:z-40 lg:flex lg:w-64 lg:flex-col lg:border-r lg:border-white/6 lg:bg-slate-900/50 lg:pt-20 lg:backdrop-blur-xl">
       <nav className="flex flex-1 flex-col gap-1 px-4 py-6">
         <p className="mb-3 px-3 text-xs font-semibold uppercase tracking-wider text-slate-500">
           Navigation
@@ -65,9 +65,9 @@ export default function Sidebar() {
       </nav>
 
       {/* Role indicator */}
-      <div className="border-t border-white/[0.06] px-4 py-4">
+      <div className="border-t border-white/6 px-4 py-4">
         <div className="flex items-center gap-2.5 rounded-xl bg-slate-800/50 px-3 py-2.5">
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-violet-500 to-indigo-600 text-xs font-bold text-white">
+          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-linear-to-br from-violet-500 to-indigo-600 text-xs font-bold text-white">
             {user.name?.charAt(0).toUpperCase()}
           </div>
           <div className="min-w-0">

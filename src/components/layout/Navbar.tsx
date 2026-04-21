@@ -47,7 +47,10 @@ const ROLE_BADGE: Record<UserRole, { label: string; className: string }> = {
 export default function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
-  const { user, logout, isAuthenticated, sessionToken } = useAuthStore();
+  const user = useAuthStore((s) => s.user);
+  const logout = useAuthStore((s) => s.logout);
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  const sessionToken = useAuthStore((s) => s.sessionToken);
   const logoutMutation = useMutation(api.users.logout);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showLogout, setShowLogout] = useState(false);
@@ -113,7 +116,7 @@ export default function Navbar() {
             </span>
             {/* Avatar + name */}
             <div className="flex items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-violet-500 to-indigo-600 text-xs font-bold text-white">
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-linear-to-br from-violet-500 to-indigo-600 text-xs font-bold text-white">
                 {user.name?.charAt(0).toUpperCase()}
               </div>
               <span className="text-sm font-medium text-slate-300">{user.name}</span>
@@ -161,7 +164,7 @@ export default function Navbar() {
             })}
             <div className="border-t border-white/5 pt-3">
               <div className="flex items-center gap-2.5 px-3 py-2">
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-violet-500 to-indigo-600 text-xs font-bold text-white">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-linear-to-br from-violet-500 to-indigo-600 text-xs font-bold text-white">
                   {user.name?.charAt(0).toUpperCase()}
                 </div>
                 <div>

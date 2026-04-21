@@ -1,4 +1,4 @@
-import { ButtonHTMLAttributes, ReactNode } from "react";
+import { ButtonHTMLAttributes, memo, ReactNode } from "react";
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: "primary" | "secondary" | "danger" | "ghost";
@@ -7,7 +7,7 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   children: ReactNode;
 }
 
-export default function Button({
+export default memo(function Button({
   variant = "primary",
   size = "md",
   isLoading = false,
@@ -21,7 +21,7 @@ export default function Button({
 
   const variants = {
     primary:
-      "bg-gradient-to-r from-violet-600 to-indigo-600 text-white shadow-lg shadow-violet-500/25 hover:shadow-violet-500/40 hover:from-violet-500 hover:to-indigo-500 focus:ring-violet-500",
+      "bg-linear-to-r from-violet-600 to-indigo-600 text-white shadow-lg shadow-violet-500/25 hover:shadow-violet-500/40 hover:from-violet-500 hover:to-indigo-500 focus:ring-violet-500",
     secondary:
       "bg-slate-800 text-slate-300 border border-white/10 hover:bg-slate-700 hover:text-white hover:border-white/20 focus:ring-slate-500",
     danger:
@@ -67,4 +67,4 @@ export default function Button({
       {children}
     </button>
   );
-}
+})

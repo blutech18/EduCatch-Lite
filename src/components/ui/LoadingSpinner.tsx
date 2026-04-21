@@ -1,4 +1,6 @@
-export default function LoadingSpinner({ text = "Loading..." }: { text?: string }) {
+import { memo } from "react";
+
+export default memo(function LoadingSpinner({ text = "Loading..." }: { text?: string }) {
   return (
     <div className="flex flex-col items-center justify-center py-20">
       <div className="relative h-12 w-12">
@@ -8,4 +10,4 @@ export default function LoadingSpinner({ text = "Loading..." }: { text?: string 
       <p className="mt-4 text-sm font-medium text-slate-400">{text}</p>
     </div>
   );
-}
+})

@@ -6,12 +6,16 @@ import { usePathname } from "next/navigation";
 import { useAuthStore } from "@/store/authStore";
 import { ChevronLeft } from "lucide-react";
 import Logo from "@/components/ui/Logo";
-import { useDashboardLayout } from "@/components/providers/DashboardLayoutProvider";
+import { useDashboardLayoutStore } from "@/store/dashboardLayoutStore";
 
 export default memo(function DashboardSidebar() {
   const pathname = usePathname();
-  const { user } = useAuthStore();
-  const { collapsed, setCollapsed, navItems, roleLabel, basePath } = useDashboardLayout();
+  const user = useAuthStore((s) => s.user);
+  const collapsed = useDashboardLayoutStore((s) => s.collapsed);
+  const setCollapsed = useDashboardLayoutStore((s) => s.setCollapsed);
+  const navItems = useDashboardLayoutStore((s) => s.navItems);
+  const roleLabel = useDashboardLayoutStore((s) => s.roleLabel);
+  const basePath = useDashboardLayoutStore((s) => s.basePath);
 
   if (!user) return null;
 

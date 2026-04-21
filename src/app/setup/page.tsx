@@ -11,10 +11,11 @@ import Button from "@/components/ui/Button";
 import bcrypt from "bcryptjs";
 import { ShieldCheck } from "lucide-react";
 import Logo from "@/components/ui/Logo";
+import { parseConvexError } from "@/lib/errors";
 
 export default function SetupPage() {
   const router = useRouter();
-  const { login } = useAuthStore();
+  const login = useAuthStore((s) => s.login);
   const createAdmin = useMutation(api.users.createInitialAdmin);
   const adminExists = useQuery(api.admin.adminExists);
 
@@ -71,7 +72,7 @@ export default function SetupPage() {
 
       router.push("/admin");
     } catch (err) {
-      setGlobalError(err instanceof Error ? err.message : "Setup failed.");
+      setGlobalError(parseConvexError(err, "Setup failed. Please try again."));
     } finally {
       setIsLoading(false);
     }
@@ -79,7 +80,7 @@ export default function SetupPage() {
 
   return (
     <div className="relative flex min-h-screen items-center justify-center px-4">
-      <div className="absolute inset-0 bg-[linear-gradient(rgba(139,92,246,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(139,92,246,0.03)_1px,transparent_1px)] bg-[size:64px_64px]" />
+      <div className="absolute inset-0 bg-[linear-gradient(rgba(139,92,246,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(139,92,246,0.03)_1px,transparent_1px)] bg-size-[64px_64px]" />
       <div className="absolute left-1/2 top-1/3 h-96 w-96 -translate-x-1/2 rounded-full bg-amber-600/10 blur-[128px]" />
 
       <div className="relative z-10 w-full max-w-md">
@@ -94,7 +95,7 @@ export default function SetupPage() {
           </div>
         </div>
 
-        <div className="rounded-2xl border border-white/[0.06] bg-slate-900/50 p-8 shadow-2xl backdrop-blur-sm">
+        <div className="rounded-2xl border border-white/6 bg-slate-900/50 p-8 shadow-2xl backdrop-blur-sm">
           <form onSubmit={handleSubmit} className="space-y-5">
             {globalError && (
               <div className="rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-400">

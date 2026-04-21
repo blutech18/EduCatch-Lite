@@ -29,6 +29,7 @@ export const getAllLessonsOverview = query({
         difficulty: l.difficulty,
         estimatedMinutes: l.estimatedMinutes,
         status: l.status,
+        content: l.content,
         studentName: studentMap.get(l.userId) ?? "Unknown",
         createdAt: l.createdAt,
       }))

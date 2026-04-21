@@ -10,11 +10,12 @@ import Input from "@/components/ui/Input";
 import Button from "@/components/ui/Button";
 import bcrypt from "bcryptjs";
 import Logo from "@/components/ui/Logo";
+import { parseConvexError } from "@/lib/errors";
 
 export default function LoginPage() {
   const router = useRouter();
   const loginMutation = useMutation(api.users.login);
-  const { login } = useAuthStore();
+  const login = useAuthStore((s) => s.login);
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -25,19 +26,26 @@ export default function LoginPage() {
     e.preventDefault();
     setError("");
 
-    if (!email || !password) {
-      setError("Please fill in all fields.");
+    const normalizedEmail = email.trim().toLowerCase();
+
+    if (!normalizedEmail || !password) {
+      setError("Please enter both your email and password.");
+      return;
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
+      setError("Please enter a valid email address.");
       return;
     }
 
     setIsLoading(true);
     try {
-      const result = await loginMutation({ email, password });
+      const result = await loginMutation({ email: normalizedEmail, password });
 
       // Compare password on client side
       const isValid = await bcrypt.compare(password, result.hashedPassword);
       if (!isValid) {
-        setError("Invalid email or password.");
+        setError("Invalid email or password. Please try again.");
         setIsLoading(false);
         return;
       }
@@ -58,10 +66,13 @@ export default function LoginPage() {
       else if (result.role === "teacher") router.push("/teacher");
       else router.push("/dashboard");
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Login failed. Please try again."
-      );
-    } finally {
+      const message = parseConvexError(err, "Sign in failed. Please try again.");
+      // Unify both "user not found" and "wrong password" under one friendly message
+      if (/invalid email or password/i.test(message)) {
+        setError("Invalid email or password. Please try again.");
+      } else {
+        setError(message);
+      }
       setIsLoading(false);
     }
   };
@@ -69,7 +80,7 @@ export default function LoginPage() {
   return (
     <div className="relative flex min-h-screen items-center justify-center px-4">
       {/* Background */}
-      <div className="absolute inset-0 bg-[linear-gradient(rgba(139,92,246,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(139,92,246,0.03)_1px,transparent_1px)] bg-[size:64px_64px]" />
+      <div className="absolute inset-0 bg-[linear-gradient(rgba(139,92,246,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(139,92,246,0.03)_1px,transparent_1px)] bg-size-[64px_64px]" />
       <div className="absolute left-1/3 top-1/3 h-96 w-96 rounded-full bg-violet-600/10 blur-[128px]" />
 
       <div className="relative z-10 w-full max-w-md">
@@ -88,7 +99,7 @@ export default function LoginPage() {
         </div>
 
         {/* Form Card */}
-        <div className="rounded-2xl border border-white/[0.06] bg-slate-900/50 p-8 shadow-2xl backdrop-blur-sm">
+        <div className="rounded-2xl border border-white/6 bg-slate-900/50 p-8 shadow-2xl backdrop-blur-sm">
           <form onSubmit={handleSubmit} className="space-y-5">
             {error && (
               <div className="rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-400">

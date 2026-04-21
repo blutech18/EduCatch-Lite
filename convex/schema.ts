@@ -28,6 +28,10 @@ export default defineSchema({
     ),
     estimatedMinutes: v.number(),
     status: v.union(v.literal("pending"), v.literal("completed")),
+    // Lesson body authored by the teacher so students can read / study from it.
+    // Optional for backward compat with lessons created before this field existed
+    // and for student-reported "missed lesson" entries that have no content yet.
+    content: v.optional(v.string()),
     createdBy: v.optional(v.id("users")),
     createdAt: v.number(),
   }).index("by_userId", ["userId"]),

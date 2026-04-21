@@ -39,6 +39,7 @@ export const addLesson = mutation({
       v.literal("hard")
     ),
     estimatedMinutes: v.number(),
+    content: v.optional(v.string()),
     sessionToken: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
@@ -51,6 +52,7 @@ export const addLesson = mutation({
       }
     }
 
+    const trimmedContent = args.content?.trim();
     const lessonId = await ctx.db.insert("lessons", {
       userId: args.userId,
       title: args.title,
@@ -59,6 +61,7 @@ export const addLesson = mutation({
       difficulty: args.difficulty,
       estimatedMinutes: args.estimatedMinutes,
       status: "pending",
+      content: trimmedContent ? trimmedContent : undefined,
       createdBy: callerId,
       createdAt: Date.now(),
     });

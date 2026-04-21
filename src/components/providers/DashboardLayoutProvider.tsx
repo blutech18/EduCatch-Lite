@@ -1,26 +1,13 @@
 "use client";
 
-import { createContext, useContext, useState, useRef, useCallback, useMemo, ReactNode } from "react";
+import { useEffect, ReactNode } from "react";
+import { useDashboardLayoutStore } from "@/store/dashboardLayoutStore";
 
 interface NavItem {
   href: string;
   label: string;
   icon: React.ComponentType<{ className?: string }>;
 }
-
-interface DashboardLayoutState {
-  collapsed: boolean;
-  setCollapsed: (v: boolean | ((prev: boolean) => boolean)) => void;
-  pageTitle: string;
-  pageSubtitle: string;
-  pageIconRef: React.RefObject<ReactNode>;
-  setHeader: (title: string, subtitle: string, icon?: ReactNode) => void;
-  navItems: NavItem[];
-  roleLabel: string;
-  basePath: string;
-}
-
-const DashboardLayoutContext = createContext<DashboardLayoutState | null>(null);
 
 interface Props {
   children: ReactNode;
@@ -30,31 +17,25 @@ interface Props {
 }
 
 export function DashboardLayoutProvider({ children, navItems, roleLabel, basePath }: Props) {
-  const [collapsed, setCollapsed] = useState(false);
-  const [pageTitle, setPageTitle] = useState("");
-  const [pageSubtitle, setPageSubtitle] = useState("");
-  const pageIconRef = useRef<ReactNode>(null);
+  const setLayoutConfig = useDashboardLayoutStore((s) => s.setLayoutConfig);
 
-  const setHeader = useCallback((title: string, subtitle: string, icon?: ReactNode) => {
-    pageIconRef.current = icon ?? null;
-    setPageTitle((prev) => (prev === title ? prev : title));
-    setPageSubtitle((prev) => (prev === subtitle ? prev : subtitle));
-  }, []);
+  useEffect(() => {
+    setLayoutConfig(navItems, roleLabel, basePath);
+  }, [navItems, roleLabel, basePath, setLayoutConfig]);
 
-  const value = useMemo(
-    () => ({ collapsed, setCollapsed, pageTitle, pageSubtitle, pageIconRef, setHeader, navItems, roleLabel, basePath }),
-    [collapsed, setCollapsed, pageTitle, pageSubtitle, setHeader, navItems, roleLabel, basePath]
-  );
-
-  return (
-    <DashboardLayoutContext.Provider value={value}>
-      {children}
-    </DashboardLayoutContext.Provider>
-  );
+  return <>{children}</>;
 }
 
 export function useDashboardLayout() {
-  const ctx = useContext(DashboardLayoutContext);
-  if (!ctx) throw new Error("useDashboardLayout must be used within DashboardLayoutProvider");
-  return ctx;
+  return {
+    collapsed: useDashboardLayoutStore((s) => s.collapsed),
+    setCollapsed: useDashboardLayoutStore((s) => s.setCollapsed),
+    pageTitle: useDashboardLayoutStore((s) => s.pageTitle),
+    pageSubtitle: useDashboardLayoutStore((s) => s.pageSubtitle),
+    pageIcon: useDashboardLayoutStore((s) => s.pageIcon),
+    setHeader: useDashboardLayoutStore((s) => s.setHeader),
+    navItems: useDashboardLayoutStore((s) => s.navItems),
+    roleLabel: useDashboardLayoutStore((s) => s.roleLabel),
+    basePath: useDashboardLayoutStore((s) => s.basePath),
+  };
 }

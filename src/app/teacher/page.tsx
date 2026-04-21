@@ -1,7 +1,8 @@
 "use client";
 
 import { useQuery } from "convex/react";
-import { useEffect } from "react";import { api } from "../../../convex/_generated/api";
+import { useEffect, useMemo, useCallback, memo } from "react";
+import { api } from "../../../convex/_generated/api";
 import { Id } from "../../../convex/_generated/dataModel";
 import RoleGuard from "@/components/auth/RoleGuard";
 import ProgressBar from "@/components/ui/ProgressBar";
@@ -9,7 +10,7 @@ import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import EmptyState from "@/components/ui/EmptyState";
 import { useTeacherStore } from "@/store/teacherStore";
 import { useAuthStore } from "@/store/authStore";
-import { useDashboardLayout } from "@/components/providers/DashboardLayoutProvider";
+import { useDashboardLayoutStore } from "@/store/dashboardLayoutStore";
 import { GraduationCap, ChevronDown, ChevronUp, BookOpen, CheckCircle2, Hourglass } from "lucide-react";
 
 export default function TeacherPage() {
@@ -20,7 +21,7 @@ export default function TeacherPage() {
   );
 }
 
-function StudentCard({
+const StudentCard = memo(function StudentCard({
   student,
 }: {
   student: {
@@ -30,8 +31,9 @@ function StudentCard({
     stats: { total: number; completed: number; pending: number; progress: number };
   };
 }) {
-  const { expandedStudentId, toggleStudent } = useTeacherStore();
-  const { sessionToken } = useAuthStore();
+  const expandedStudentId = useTeacherStore((s) => s.expandedStudentId);
+  const toggleStudent = useTeacherStore((s) => s.toggleStudent);
+  const sessionToken = useAuthStore((s) => s.sessionToken);
   const expanded = expandedStudentId === student._id;
 
   const studentData = useQuery(
@@ -39,11 +41,11 @@ function StudentCard({
     expanded ? { studentId: student._id, sessionToken: sessionToken ?? undefined } : "skip"
   );
 
-  const getDifficultyBadge = (difficulty: string) => {
+  const getDifficultyBadge = useCallback((difficulty: string) => {
     if (difficulty === "easy") return "border-emerald-500/20 bg-emerald-500/10 text-emerald-400";
     if (difficulty === "hard") return "border-red-500/20 bg-red-500/10 text-red-400";
     return "border-amber-500/20 bg-amber-500/10 text-amber-400";
-  };
+  }, []);
 
   return (
     <div className="overflow-hidden rounded-2xl border border-white/6 bg-slate-800/30 transition-all hover:border-white/10">
@@ -116,16 +118,17 @@ function StudentCard({
       )}
     </div>
   );
-}
+});
 
 function TeacherDashboard() {
-  const { sessionToken } = useAuthStore();
-  const { setHeader } = useDashboardLayout();
+  const sessionToken = useAuthStore((s) => s.sessionToken);
+  const setHeader = useDashboardLayoutStore((s) => s.setHeader);
   const students = useQuery(api.teachers.getAllStudents, sessionToken ? { sessionToken } : "skip");
+  const headerIcon = useMemo(() => <GraduationCap className="h-5 w-5 text-emerald-400" />, []);
 
   useEffect(() => {
-    setHeader("Student Overview", "View all students' catch-up progress", <GraduationCap className="h-5 w-5 text-emerald-400" />);
-  }, [setHeader]);
+    setHeader("Student Overview", "View all students' catch-up progress", headerIcon);
+  }, [setHeader, headerIcon]);
 
   return (
       <main className="pt-16">

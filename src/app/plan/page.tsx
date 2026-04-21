@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useMemo, useCallback } from "react";
 import { useQuery } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import { useAuthStore } from "@/store/authStore";
-import { useDashboardLayout } from "@/components/providers/DashboardLayoutProvider";
+import { useDashboardLayoutStore } from "@/store/dashboardLayoutStore";
 import EmptyState from "@/components/ui/EmptyState";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import { PartyPopper, ClipboardList, CalendarHeart } from "lucide-react";
@@ -18,9 +18,18 @@ export default function PlanPage() {
   );
 }
 
+const DIFFICULTY_COLORS: Record<string, { bg: string; border: string; text: string; dot: string; line: string }> = {
+  easy: { bg: "bg-emerald-500/10", border: "border-emerald-500/20", text: "text-emerald-400", dot: "bg-emerald-400", line: "bg-emerald-500/20" },
+  medium: { bg: "bg-amber-500/10", border: "border-amber-500/20", text: "text-amber-400", dot: "bg-amber-400", line: "bg-amber-500/20" },
+  hard: { bg: "bg-red-500/10", border: "border-red-500/20", text: "text-red-400", dot: "bg-red-400", line: "bg-red-500/20" },
+};
+const DEFAULT_COLORS = { bg: "bg-slate-500/10", border: "border-slate-500/20", text: "text-slate-400", dot: "bg-slate-400", line: "bg-slate-500/20" };
+
 function Plan() {
-  const { user, sessionToken } = useAuthStore();
-  const { setHeader } = useDashboardLayout();
+  const user = useAuthStore((s) => s.user);
+  const sessionToken = useAuthStore((s) => s.sessionToken);
+  const setHeader = useDashboardLayoutStore((s) => s.setHeader);
+  const headerIcon = useMemo(() => <CalendarHeart className="h-5 w-5 text-violet-400" />, []);
 
   const plan = useQuery(
     api.lessons.getCatchUpPlan,
@@ -28,21 +37,20 @@ function Plan() {
   );
 
   useEffect(() => {
-    setHeader("Catch-up Plan", "Auto-generated study schedule based on difficulty", <CalendarHeart className="h-5 w-5 text-violet-400" />);
-  }, [setHeader]);
+    setHeader("Catch-up Plan", "Auto-generated study schedule based on difficulty", headerIcon);
+  }, [setHeader, headerIcon]);
+
+  const getDifficultyColor = useCallback(
+    (difficulty: string) => DIFFICULTY_COLORS[difficulty] || DEFAULT_COLORS,
+    []
+  );
+
+  const totalDuration = useMemo(
+    () => plan?.reduce((sum, item) => sum + item.recommendedDuration, 0),
+    [plan]
+  );
 
   if (!user) return null;
-
-  const getDifficultyColor = (difficulty: string) => {
-    const map: Record<string, { bg: string; border: string; text: string; dot: string; line: string }> = {
-      easy: { bg: "bg-emerald-500/10", border: "border-emerald-500/20", text: "text-emerald-400", dot: "bg-emerald-400", line: "bg-emerald-500/20" },
-      medium: { bg: "bg-amber-500/10", border: "border-amber-500/20", text: "text-amber-400", dot: "bg-amber-400", line: "bg-amber-500/20" },
-      hard: { bg: "bg-red-500/10", border: "border-red-500/20", text: "text-red-400", dot: "bg-red-400", line: "bg-red-500/20" },
-    };
-    return map[difficulty] || { bg: "bg-slate-500/10", border: "border-slate-500/20", text: "text-slate-400", dot: "bg-slate-400", line: "bg-slate-500/20" };
-  };
-
-  const totalDuration = plan?.reduce((sum, item) => sum + item.recommendedDuration, 0);
 
   return (
       <main className="pt-16">

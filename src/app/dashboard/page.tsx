@@ -1,14 +1,14 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useMemo, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useQuery } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import { useAuthStore } from "@/store/authStore";
+import { useDashboardLayoutStore } from "@/store/dashboardLayoutStore";
 import StatCard from "@/components/ui/StatCard";
 import ProgressBar from "@/components/ui/ProgressBar";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
-import { useDashboardLayout } from "@/components/providers/DashboardLayoutProvider";
 import { Target, BookOpen, CheckCircle2, Hourglass, TrendingUp, ClipboardList, Inbox, LayoutDashboard } from "lucide-react";
 import RoleGuard from "@/components/auth/RoleGuard";
 
@@ -22,8 +22,10 @@ export default function DashboardPage() {
 
 function Dashboard() {
   const router = useRouter();
-  const { user, sessionToken } = useAuthStore();
-  const { setHeader } = useDashboardLayout();
+  const user = useAuthStore((s) => s.user);
+  const sessionToken = useAuthStore((s) => s.sessionToken);
+  const setHeader = useDashboardLayoutStore((s) => s.setHeader);
+  const headerIcon = useMemo(() => <LayoutDashboard className="h-5 w-5 text-violet-400" />, []);
 
   const stats = useQuery(
     api.lessons.getStats,
@@ -35,8 +37,8 @@ function Dashboard() {
   );
 
   useEffect(() => {
-    setHeader("Dashboard", "Overview of your catch-up progress", <LayoutDashboard className="h-5 w-5 text-violet-400" />);
-  }, [setHeader]);
+    setHeader("Dashboard", "Overview of your catch-up progress", headerIcon);
+  }, [setHeader, headerIcon]);
 
   if (!user) return null;
 

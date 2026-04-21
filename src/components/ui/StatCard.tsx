@@ -1,4 +1,4 @@
-import { ReactNode } from "react";
+import { memo, ReactNode } from "react";
 
 interface CardProps {
   title: string;
@@ -8,7 +8,7 @@ interface CardProps {
   gradient: string;
 }
 
-export default function StatCard({
+export default memo(function StatCard({
   title,
   value,
   subtitle,
@@ -16,7 +16,7 @@ export default function StatCard({
   gradient,
 }: CardProps) {
   return (
-    <div className="group relative overflow-hidden rounded-2xl border border-white/[0.06] bg-slate-800/50 p-6 transition-all duration-300 hover:border-white/[0.12] hover:shadow-xl hover:shadow-black/20">
+    <div className="group relative overflow-hidden rounded-2xl border border-white/6 bg-slate-800/50 p-6 transition-all duration-300 hover:border-white/12 hover:shadow-xl hover:shadow-black/20">
       {/* Gradient glow */}
       <div
         className={`absolute -right-6 -top-6 h-24 w-24 rounded-full ${gradient} opacity-20 blur-2xl transition-opacity duration-300 group-hover:opacity-30`}
@@ -34,4 +34,4 @@ export default function StatCard({
       </div>
     </div>
   );
-}
+})

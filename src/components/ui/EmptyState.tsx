@@ -1,6 +1,6 @@
-import { ReactNode } from "react";
+import { memo, ReactNode } from "react";
 
-export default function EmptyState({
+export default memo(function EmptyState({
   icon,
   title,
   description,
@@ -16,4 +16,4 @@ export default function EmptyState({
       <p className="max-w-sm text-sm text-slate-400">{description}</p>
     </div>
   );
-}
+})

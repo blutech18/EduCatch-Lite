@@ -8,8 +8,8 @@ import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import { Users, GraduationCap, ShieldCheck, BookOpen, CheckCircle2 } from "lucide-react";
 import Link from "next/link";
 import { useAuthStore } from "@/store/authStore";
-import { useDashboardLayout } from "@/components/providers/DashboardLayoutProvider";
-import { useEffect } from "react";
+import { useDashboardLayoutStore } from "@/store/dashboardLayoutStore";
+import { useEffect, useMemo } from "react";
 
 export default function AdminPage() {
   return (
@@ -20,16 +20,17 @@ export default function AdminPage() {
 }
 
 function AdminDashboard() {
-  const { sessionToken } = useAuthStore();
-  const { setHeader } = useDashboardLayout();
+  const sessionToken = useAuthStore((s) => s.sessionToken);
+  const setHeader = useDashboardLayoutStore((s) => s.setHeader);
   const stats = useQuery(api.admin.getSystemStats, sessionToken ? { sessionToken } : "skip");
   const users = useQuery(api.admin.getAllUsers, sessionToken ? { sessionToken } : "skip");
+  const headerIcon = useMemo(() => <ShieldCheck className="h-5 w-5 text-amber-400" />, []);
 
   useEffect(() => {
-    setHeader("Admin Dashboard", "System-wide overview of EduCatch Lite", <ShieldCheck className="h-5 w-5 text-amber-400" />);
-  }, [setHeader]);
+    setHeader("Admin Dashboard", "System-wide overview of EduCatch Lite", headerIcon);
+  }, [setHeader, headerIcon]);
 
-  const recentUsers = users?.slice(-5).reverse();
+  const recentUsers = useMemo(() => users?.slice(-5).reverse(), [users]);
 
   return (
       <main className="pt-16">

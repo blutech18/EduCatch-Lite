@@ -1,3 +1,5 @@
+import { memo } from "react";
+
 interface ProgressBarProps {
   value: number;
   label?: string;
@@ -5,7 +7,7 @@ interface ProgressBarProps {
   size?: "sm" | "md" | "lg";
 }
 
-export default function ProgressBar({
+export default memo(function ProgressBar({
   value,
   label,
   showPercentage = true,
@@ -43,10 +45,10 @@ export default function ProgressBar({
         className={`${heightMap[size]} w-full overflow-hidden rounded-full bg-slate-700/50`}
       >
         <div
-          className={`${heightMap[size]} rounded-full bg-gradient-to-r ${getColor()} transition-all duration-700 ease-out`}
+          className={`${heightMap[size]} rounded-full bg-linear-to-r ${getColor()} transition-all duration-700 ease-out`}
           style={{ width: `${clampedValue}%` }}
         />
       </div>
     </div>
   );
-}
+})
