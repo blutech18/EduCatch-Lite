@@ -32,9 +32,15 @@ export default defineSchema({
     // Optional for backward compat with lessons created before this field existed
     // and for student-reported "missed lesson" entries that have no content yet.
     content: v.optional(v.string()),
+    // Shared ID linking copies of the same lesson that was assigned to
+    // multiple students in a single action. Used to dedupe the teacher overview
+    // and allow group-level actions (e.g., delete-for-all).
+    groupId: v.optional(v.string()),
     createdBy: v.optional(v.id("users")),
     createdAt: v.number(),
-  }).index("by_userId", ["userId"]),
+  })
+    .index("by_userId", ["userId"])
+    .index("by_groupId", ["groupId"]),
 
   sessions: defineTable({
     userId: v.id("users"),

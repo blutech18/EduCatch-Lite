@@ -1,6 +1,6 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
-import { authenticateSession, tryAuthenticateSession } from "./auth";
+import { authenticateSession, tryAuthenticateSession, requireRole } from "./auth";
 
 // Get all lessons for a user (student: own only)
 export const getLessons = query({
@@ -40,6 +40,7 @@ export const addLesson = mutation({
     ),
     estimatedMinutes: v.number(),
     content: v.optional(v.string()),
+    groupId: v.optional(v.string()),
     sessionToken: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
@@ -62,10 +63,31 @@ export const addLesson = mutation({
       estimatedMinutes: args.estimatedMinutes,
       status: "pending",
       content: trimmedContent ? trimmedContent : undefined,
+      groupId: args.groupId,
       createdBy: callerId,
       createdAt: Date.now(),
     });
     return lessonId;
+  },
+});
+
+// Delete every lesson that shares the same groupId (teacher/admin only).
+// Used when a teacher removes a lesson that was assigned to multiple students.
+export const deleteLessonGroup = mutation({
+  args: {
+    groupId: v.string(),
+    sessionToken: v.string(),
+  },
+  handler: async (ctx, args) => {
+    await requireRole(ctx, args.sessionToken, ["teacher", "admin"]);
+
+    const lessons = await ctx.db
+      .query("lessons")
+      .withIndex("by_groupId", (q) => q.eq("groupId", args.groupId))
+      .collect();
+
+    await Promise.all(lessons.map((l) => ctx.db.delete(l._id)));
+    return { deleted: lessons.length };
   },
 });
 

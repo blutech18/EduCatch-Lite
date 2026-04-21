@@ -11,8 +11,22 @@ import LessonForm from "@/components/forms/LessonForm";
 import Button from "@/components/ui/Button";
 import EmptyState from "@/components/ui/EmptyState";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
-import { ClipboardList, Inbox, BookOpen, ChevronUp } from "lucide-react";
+import ConfirmModal from "@/components/ui/ConfirmModal";
+import LessonReaderModal from "@/components/ui/LessonReaderModal";
+import { ClipboardList, Inbox, BookOpen, Trash2 } from "lucide-react";
 import RoleGuard from "@/components/auth/RoleGuard";
+import { parseConvexError } from "@/lib/errors";
+
+type StudentLesson = {
+  _id: Id<"lessons">;
+  title: string;
+  subject: string;
+  lessonDate: string;
+  difficulty: "easy" | "medium" | "hard";
+  estimatedMinutes: number;
+  status: "pending" | "completed";
+  content?: string;
+};
 
 export default function LessonsPage() {
   return (
@@ -34,11 +48,10 @@ function Lessons() {
   const filter = useLessonStore((s) => s.filter);
   const setFilter = useLessonStore((s) => s.setFilter);
   const headerIcon = useMemo(() => <BookOpen className="h-5 w-5 text-violet-400" />, []);
-  const [expandedId, setExpandedId] = useState<string | null>(null);
-  const toggleExpanded = useCallback(
-    (id: string) => setExpandedId((curr) => (curr === id ? null : id)),
-    []
-  );
+  const [readingLesson, setReadingLesson] = useState<StudentLesson | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<StudentLesson | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [actionError, setActionError] = useState("");
 
   const updateStatus = useMutation(api.lessons.updateStatus);
   const deleteLesson = useMutation(api.lessons.deleteLesson);
@@ -61,16 +74,26 @@ function Lessons() {
   const handleToggleStatus = useCallback(async (lessonId: Id<"lessons">, currentStatus: string) => {
     try {
       await updateStatus({ lessonId, status: currentStatus === "completed" ? "pending" : "completed", sessionToken: sessionToken ?? undefined });
-    } catch (error) { console.error("Failed to update status:", error); }
+    } catch (error) {
+      setActionError(parseConvexError(error, "Failed to update lesson status."));
+    }
   }, [updateStatus, sessionToken]);
 
-  const handleDelete = useCallback(async (lessonId: Id<"lessons">) => {
-    setDeletingId(lessonId);
+  const confirmDelete = useCallback(async () => {
+    if (!deleteTarget) return;
+    setIsDeleting(true);
+    setDeletingId(deleteTarget._id);
+    setActionError("");
     try {
-      await deleteLesson({ lessonId, sessionToken: sessionToken ?? undefined });
-    } catch (error) { console.error("Failed to delete lesson:", error); }
-    finally { setDeletingId(null); }
-  }, [deleteLesson, sessionToken, setDeletingId]);
+      await deleteLesson({ lessonId: deleteTarget._id, sessionToken: sessionToken ?? undefined });
+      setDeleteTarget(null);
+    } catch (error) {
+      setActionError(parseConvexError(error, "Failed to delete lesson."));
+    } finally {
+      setIsDeleting(false);
+      setDeletingId(null);
+    }
+  }, [deleteTarget, deleteLesson, sessionToken, setDeletingId]);
 
   const getDifficultyBadge = useCallback((difficulty: string) => {
     const styles = { easy: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20", medium: "bg-amber-500/10 text-amber-400 border-amber-500/20", hard: "bg-red-500/10 text-red-400 border-red-500/20" };
@@ -101,6 +124,12 @@ function Lessons() {
             ))}
           </div>
 
+          {actionError && (
+            <div className="mb-4 rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-400">
+              {actionError}
+            </div>
+          )}
+
           {lessons === undefined ? (
             <LoadingSpinner text="Loading lessons..." />
           ) : filteredLessons?.length === 0 ? (
@@ -108,7 +137,6 @@ function Lessons() {
           ) : (
             <div className="space-y-3">
               {filteredLessons?.map((lesson) => {
-                const isExpanded = expandedId === lesson._id;
                 const hasContent = !!lesson.content && lesson.content.trim().length > 0;
                 return (
                   <div key={lesson._id} className="group rounded-2xl border border-white/6 bg-slate-800/30 p-5 transition-all hover:border-white/10 hover:bg-slate-800/50">
@@ -132,38 +160,46 @@ function Lessons() {
                       </div>
                       <div className="flex flex-wrap items-center gap-2 sm:shrink-0">
                         {hasContent && (
-                          <Button variant={isExpanded ? "secondary" : "primary"} size="sm" onClick={() => toggleExpanded(lesson._id)}>
-                            {isExpanded ? (
-                              <>
-                                <ChevronUp className="h-3.5 w-3.5" /> Hide
-                              </>
-                            ) : (
-                              <>
-                                <BookOpen className="h-3.5 w-3.5" /> Read Lesson
-                              </>
-                            )}
+                          <Button variant="primary" size="sm" onClick={() => setReadingLesson(lesson as StudentLesson)}>
+                            <BookOpen className="h-3.5 w-3.5" /> Read Lesson
                           </Button>
                         )}
                         <Button variant="ghost" size="sm" onClick={() => handleToggleStatus(lesson._id, lesson.status)}>{lesson.status === "completed" ? "Undo" : "Mark Complete"}</Button>
-                        <Button variant="danger" size="sm" isLoading={deletingId === lesson._id} onClick={() => handleDelete(lesson._id)}>Delete</Button>
+                        <Button variant="danger" size="sm" isLoading={deletingId === lesson._id} onClick={() => setDeleteTarget(lesson as StudentLesson)}>
+                          <Trash2 className="h-3.5 w-3.5" /> Delete
+                        </Button>
                       </div>
                     </div>
-                    {hasContent && isExpanded && (
-                      <div className="mt-4 rounded-xl border border-white/6 bg-slate-900/40 p-4 sm:p-5">
-                        <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-slate-500">
-                          Lesson
-                        </p>
-                        <p className="whitespace-pre-wrap text-sm leading-relaxed text-slate-200">
-                          {lesson.content}
-                        </p>
-                      </div>
-                    )}
                   </div>
                 );
               })}
             </div>
           )}
         </div>
+
+        {readingLesson && (
+          <LessonReaderModal
+            open
+            title={readingLesson.title}
+            subject={readingLesson.subject}
+            difficulty={readingLesson.difficulty}
+            lessonDate={readingLesson.lessonDate}
+            estimatedMinutes={readingLesson.estimatedMinutes}
+            content={readingLesson.content ?? ""}
+            onClose={() => setReadingLesson(null)}
+          />
+        )}
+
+        <ConfirmModal
+          open={!!deleteTarget}
+          title="Delete lesson?"
+          message="This lesson will be permanently removed from your list. This cannot be undone."
+          confirmLabel="Delete"
+          cancelLabel="Cancel"
+          isLoading={isDeleting}
+          onConfirm={confirmDelete}
+          onCancel={() => (isDeleting ? null : setDeleteTarget(null))}
+        />
       </main>
   );
 }

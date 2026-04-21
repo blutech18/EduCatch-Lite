@@ -90,10 +90,18 @@ export default function TeacherLessonForm({ onSuccess }: TeacherLessonFormProps)
 
     setIsSubmitting(true);
     try {
-      const targets =
-        formData.studentId === "__all__"
-          ? (students ?? []).map((s) => s._id)
-          : [formData.studentId as Id<"users">];
+      const isBulk = formData.studentId === "__all__";
+      const targets = isBulk
+        ? (students ?? []).map((s) => s._id)
+        : [formData.studentId as Id<"users">];
+
+      // When assigning the same lesson to multiple students, share a groupId
+      // so the teacher overview shows a single consolidated row.
+      const groupId =
+        isBulk && targets.length > 1
+          ? (globalThis.crypto?.randomUUID?.() ??
+              `grp_${Date.now()}_${Math.random().toString(36).slice(2)}`)
+          : undefined;
 
       await Promise.all(
         targets.map((uid) =>
@@ -105,6 +113,7 @@ export default function TeacherLessonForm({ onSuccess }: TeacherLessonFormProps)
             difficulty: formData.difficulty as "easy" | "medium" | "hard",
             estimatedMinutes: Number(formData.estimatedMinutes),
             content: formData.content.trim(),
+            groupId,
             sessionToken: sessionToken ?? undefined,
           })
         )

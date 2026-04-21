@@ -19,19 +19,78 @@ export const getAllLessonsOverview = query({
     const studentMap = new Map(students.map((s) => [s._id, s.name]));
     const allLessons = await ctx.db.query("lessons").collect();
 
-    return allLessons
-      .filter((l) => studentMap.has(l.userId))
-      .map((l) => ({
-        _id: l._id,
-        title: l.title,
-        subject: l.subject,
-        lessonDate: l.lessonDate,
-        difficulty: l.difficulty,
-        estimatedMinutes: l.estimatedMinutes,
-        status: l.status,
-        content: l.content,
-        studentName: studentMap.get(l.userId) ?? "Unknown",
-        createdAt: l.createdAt,
+    const visibleLessons = allLessons.filter((l) => studentMap.has(l.userId));
+
+    // Group lessons that share a groupId (same lesson assigned to several
+    // students in one action). Ungrouped lessons stay as standalone entries.
+    type Acc = {
+      key: string;
+      groupId?: string;
+      lessonIds: typeof visibleLessons[number]["_id"][];
+      title: string;
+      subject: string;
+      lessonDate: string;
+      difficulty: "easy" | "medium" | "hard";
+      estimatedMinutes: number;
+      content?: string;
+      studentNames: string[];
+      completedCount: number;
+      totalCount: number;
+      status: "pending" | "completed";
+      createdAt: number;
+    };
+
+    const groups = new Map<string, Acc>();
+    for (const l of visibleLessons) {
+      const key = l.groupId ?? `single:${l._id}`;
+      const existing = groups.get(key);
+      const studentName = studentMap.get(l.userId) ?? "Unknown";
+      if (existing) {
+        existing.lessonIds.push(l._id);
+        existing.studentNames.push(studentName);
+        existing.totalCount += 1;
+        if (l.status === "completed") existing.completedCount += 1;
+        // Group is "completed" only when every copy is completed.
+        existing.status =
+          existing.completedCount === existing.totalCount ? "completed" : "pending";
+        // Prefer the earliest createdAt so the row order is stable.
+        if (l.createdAt < existing.createdAt) existing.createdAt = l.createdAt;
+      } else {
+        groups.set(key, {
+          key,
+          groupId: l.groupId,
+          lessonIds: [l._id],
+          title: l.title,
+          subject: l.subject,
+          lessonDate: l.lessonDate,
+          difficulty: l.difficulty,
+          estimatedMinutes: l.estimatedMinutes,
+          content: l.content,
+          studentNames: [studentName],
+          completedCount: l.status === "completed" ? 1 : 0,
+          totalCount: 1,
+          status: l.status,
+          createdAt: l.createdAt,
+        });
+      }
+    }
+
+    return Array.from(groups.values())
+      .map((g) => ({
+        _id: g.key,
+        groupId: g.groupId,
+        lessonIds: g.lessonIds,
+        title: g.title,
+        subject: g.subject,
+        lessonDate: g.lessonDate,
+        difficulty: g.difficulty,
+        estimatedMinutes: g.estimatedMinutes,
+        status: g.status,
+        content: g.content,
+        studentNames: g.studentNames.sort((a, b) => a.localeCompare(b)),
+        studentCount: g.totalCount,
+        completedCount: g.completedCount,
+        createdAt: g.createdAt,
       }))
       .sort(
         (a, b) =>
