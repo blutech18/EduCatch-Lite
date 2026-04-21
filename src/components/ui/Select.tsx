@@ -4,10 +4,15 @@ interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
   label: string;
   error?: string;
   options: { value: string; label: string }[];
+  /** Text shown for the empty/default option. Defaults to "Select...". */
+  placeholder?: string;
 }
 
 const Select = forwardRef<HTMLSelectElement, SelectProps>(
-  ({ label, error, options, className = "", ...props }, ref) => {
+  (
+    { label, error, options, className = "", placeholder = "Select...", ...props },
+    ref
+  ) => {
     return (
       <div className="w-full">
         <label className="mb-1.5 block text-sm font-medium text-slate-300">
@@ -23,7 +28,7 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(
           {...props}
         >
           <option value="" className="bg-slate-800">
-            Select...
+            {placeholder}
           </option>
           {options.map((opt) => (
             <option key={opt.value} value={opt.value} className="bg-slate-800">

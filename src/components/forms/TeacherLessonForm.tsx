@@ -145,6 +145,7 @@ export default function TeacherLessonForm({ onSuccess }: TeacherLessonFormProps)
       )}
       <Select
         label="Student"
+        placeholder="Select a student"
         options={studentOptions}
         value={formData.studentId}
         onChange={(e) =>
@@ -166,6 +167,7 @@ export default function TeacherLessonForm({ onSuccess }: TeacherLessonFormProps)
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <Select
           label="Subject"
+          placeholder="Select a subject"
           options={subjectOptions}
           value={formData.subject}
           onChange={(e) =>
@@ -175,6 +177,7 @@ export default function TeacherLessonForm({ onSuccess }: TeacherLessonFormProps)
         />
         <Select
           label="Difficulty"
+          placeholder="Select difficulty"
           options={difficultyOptions}
           value={formData.difficulty}
           onChange={(e) =>
